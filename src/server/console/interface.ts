@@ -2,6 +2,7 @@ import { createInterface } from "readline";
 
 export interface Console {
     question(output: string): Promise<string>;
+    write(output: string): void;
 }
 
 export async function withConsole(action: ((console: Console) => Promise<void>)) {
@@ -13,6 +14,9 @@ export async function withConsole(action: ((console: Console) => Promise<void>))
                 return new Promise<string>((resolve, error) => {
                     i.question(output, (answer) => resolve(answer));
                 });
+            },
+            write: (output) => {
+                i.write(output);
             }
         });
     }
