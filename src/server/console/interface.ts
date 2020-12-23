@@ -1,7 +1,7 @@
 import { createInterface } from "readline";
 
 export interface Console {
-    question(output: string): Promise<string>;
+    question<T>(output: string, defaultValue: string, parse: (input: string) => T): Promise<T>;
     write(output: string): void;
 }
 
@@ -10,13 +10,24 @@ export async function withConsole(action: ((console: Console) => Promise<void>))
 
     try {
         await action({
-            question: (output) => {
-                return new Promise<string>((resolve, error) => {
-                    i.question(output, (answer) => resolve(answer));
-                });
+            question: async (output, defaultValue, parse) => {
+                const query = defaultValue ? `${output} (default ${defaultValue}): ` : `${output}: `;
+                while (true) {
+                    try {
+                        const entered = await new Promise<string>((resolve, error) => {
+                            i.question(query, (answer) => resolve(answer));
+                        });
+                        const input = entered || defaultValue;
+                        const value = parse(input);
+                        return value;
+                    }
+                    catch (err) {
+                        i.write(err.message + "\n");
+                    }
+                }
             },
             write: (output) => {
-                i.write(output);
+                i.write(output + "\n");
             }
         });
     }

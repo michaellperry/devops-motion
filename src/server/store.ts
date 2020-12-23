@@ -26,13 +26,15 @@ project snapshots.
 Please download PostgreSQL from https://www.postgresql.org/download/
 
 Once you have it installed, I'll set up the database.
----------
-`);
+---------`);
 
-    const port = await console.question("PostgreSQL port number: (default 5432)") || "5432";
-
-    console.write(`Port: ${port}
-`);
+    const port = await console.question("PostgreSQL port number", "5432", input => {
+        const value = parseInt(input);
+        if (isNaN(value) || value < 1 || value > 65536) {
+            throw new Error("Please enter a whole number between 1 and 65536.");
+        }
+        return value;
+    });
 
     console.write(`---------
 Please set the environment variable DEVOPS_MOTION_POSTGRESQL to a connection
@@ -40,7 +42,6 @@ string.
 
 You can do this in ~/.bashrc with:
 
-export DEVOPS_MOTION_POSTGRESQL=postgresql://dev:devpw@localhost:5432/myapplication
----------
-`);
+export DEVOPS_MOTION_POSTGRESQL=postgresql://dev:devpw@localhost:${port}/devopsmotion
+---------`);
 }
