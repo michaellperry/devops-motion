@@ -1,3 +1,8 @@
-console.log("I'm here to help!");
+import { refreshAll } from "./azure-devops/refresh";
 
-export {}
+async function main() {
+    const j = await initializeStore();
+    await refreshAll(j);
+}
+
+main().catch(err => console.error(err));
