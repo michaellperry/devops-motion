@@ -1,35 +1,47 @@
 import { readFile } from "fs";
-import { Jinaga, JinagaServer } from "jinaga";
+import { JinagaServer, JinagaServerInstance } from "jinaga";
 import { Client } from "pg";
 import { env } from "process";
-import { Console, withConsole } from "./interactive/console";
-import { errorMessage, installPostgres, postgresAdvice, setEnvironmentVariable, setupScriptAdvice, welcome } from "./interactive/messages";
+import { createUser, userExists } from "../database/scripts";
+import { Console, withConsole } from "./console";
+import { createUserAdvice, creatingApplicationUser, errorMessage, installPostgres, postgresAdvice, setEnvironmentVariable, setupScriptAdvice } from "./messages";
 
 const databaseName = "devopsmotion";
 
-export async function initializeStore(): Promise<Jinaga> {
-    const connectionString = env.DEVOPS_MOTION_POSTGRESQL;
+export async function initializeStore(): Promise<JinagaServerInstance> {
+    let connectionString = env.DEVOPS_MOTION_POSTGRESQL;
 
     if (!connectionString) {
-        await withConsole(console => setUpDatabase(console));
+        connectionString = await withConsole(console => setUpDatabase(console));
     }
 
     const server = JinagaServer.create({
-
+        pgKeystore: connectionString,
+        pgStore: connectionString
     });
-    return server.j;
+    return server;
 }
 
 async function setUpDatabase(console: Console) {
-    console.write(welcome);
     console.write(installPostgres);
 
     const address = await connectToDatabase(console);
 
-    console.write(setEnvironmentVariable(address.host, address.port, databaseName));
+    const credentials = await createApplicationUser(console, address);
+
+    const connectionString = `postgresql://dev:devpw@${address.host}:${address.port}/${databaseName}`;
+    console.write(setEnvironmentVariable(connectionString));
+    return connectionString;
 }
 
-async function connectToDatabase(console: Console) {
+interface PostgresAddress {
+    host: string;
+    port: number;
+    database: string;
+    user: string;
+};
+
+async function connectToDatabase(console: Console): Promise<PostgresAddress> {
     while (true) {
         const host = await console.question("PostgreSQL host", "localhost");
         const port = await console.question("PostgreSQL port number", "5432", input => {
@@ -67,7 +79,7 @@ async function connectToDatabase(console: Console) {
             continue;
         }
 
-        return { host, port };
+        return { host, port, database, user };
     }
 }
 
@@ -147,4 +159,57 @@ function readFileAsync(path: string) {
             }
         })
     });
+}
+
+interface UserCredentials {
+    username: string;
+    password: string;
+};
+
+async function createApplicationUser(console: Console, address: PostgresAddress) : Promise<UserCredentials> {
+    while (true) {
+        console.write(creatingApplicationUser(databaseName));
+        const username = await console.question("Application user name", "domapp");
+        const password = await console.question("Application password");
+        if (!password) {
+            console.write("A password is required.");
+            continue;
+        }
+
+        try {
+            console.write("\n");
+            await createUserRole(console, address, username, password);
+        }
+        catch (err) {
+            console.write(errorMessage(createUserAdvice, err));
+            continue;
+        }
+
+        return { username, password };
+    }
+}
+
+async function createUserRole(console: Console, address: PostgresAddress, username: string, password: string) {
+    const client = new Client({
+        host: address.host,
+        port: address.port,
+        database: address.database,
+        user: address.user
+    });
+
+    try {
+        await client.connect();
+
+        const users = await client.query(userExists, [ username ]);
+        if (users.rowCount === 0) {
+            console.write(`Creating application user ${username}.`);
+            await client.query(createUser, [ username, password ]);
+        }
+        else {
+            console.write(`The user ${username} already exists.`);
+        }
+    }
+    finally {
+        await client.end();
+    }
 }

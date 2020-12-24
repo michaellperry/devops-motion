@@ -1,4 +1,4 @@
-import { createInterface, Interface } from "readline";
+import { createInterface } from "readline";
 
 export interface Console {
     question(output: string, defaultValue?: string): Promise<string>;
@@ -6,11 +6,11 @@ export interface Console {
     write(output: string): void;
 }
 
-export async function withConsole(action: ((console: Console) => Promise<void>)) {
+export async function withConsole<T>(action: ((console: Console) => Promise<T>)) {
     const i = createInterface(process.stdin, process.stdout);
 
     try {
-        await action({
+        return await action({
             question: async <T>(output: string, defaultValue: string, parse?: (input: string) => T) => {
                 const query = defaultValue ? `${output} (default ${defaultValue}): ` : `${output}: `;
                 while (true) {

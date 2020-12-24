@@ -17,13 +17,13 @@ Please download PostgreSQL from https://www.postgresql.org/download/
 Once you have it installed, I'll set up the database.
 `;
 
-export const setEnvironmentVariable = (host: string, port: number, databaseName: string) => `
+export const setEnvironmentVariable = (connectionString: string) => `
 Please set the environment variable DEVOPS_MOTION_POSTGRESQL to a connection
 string.
 
 You can do this in ~/.bashrc with:
 
-export DEVOPS_MOTION_POSTGRESQL=postgresql://dev:devpw@${host}:${port}/${databaseName}
+export DEVOPS_MOTION_POSTGRESQL=${connectionString}
 
 Once that's set, run npm start again and we'll move on to the next step.
 `;
@@ -48,3 +48,13 @@ ${advice}
 ${err.message}
 
 xxxxxxxxx`;
+
+export const creatingApplicationUser = (databaseName: string) => `
+Now I need to create a user role for the application to use. This role will
+have limited access to the ${databaseName} database. What credentials would
+you like this user role to have?
+`;
+
+export const createUserAdvice = `
+I was not able to create the application user.
+`;
