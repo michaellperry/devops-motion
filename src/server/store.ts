@@ -42,72 +42,98 @@ async function connectToDatabase(console: Console) {
         const database = await console.question("Primary (not application) database", "postgres");
         const user = await console.question("Administrative user", "postgres");
 
-        const client = new Client({
-            host,
-            port,
-            database,
-            user
-        });
-
         try {
-            console.write(`Connecting to the PostgreSQL server.`);
-            await client.connect();
-
-            console.write(`Looking for the ${databaseName} database.`);
-            const databases = await client.query(`SELECT 1 FROM pg_database WHERE datname = '${databaseName}';`);
-            if (databases.rowCount === 0) {
-                console.write(`The ${databaseName} database does not exist yet. Creating it now...`);
-                await createApplicationDatabase(console, client);
-            }
-            else {
-                console.write(`The ${databaseName} database already exists.`);
-            }
-
-            await initializeApplicationDatabase(console, host, port, user);
-
-            return { host, port };
+            await createApplicationDatabase(console, host, port, database, user);
         }
         catch (err) {
             console.write(errorMessage(postgresAdvice, err));
+            continue;
         }
-        finally {
-            await client.end();
+
+        let script = "";
+        try {
+            script = await loadSetupScript();
         }
+        catch (err) {
+            console.write(errorMessage(setupScriptAdvice(databaseName), err));
+            continue;
+        }
+    
+        try {
+            await initializeApplicationDatabase(console, host, port, user, script);
+        }
+        catch (err) {
+            console.write(errorMessage(postgresAdvice, err));
+            continue;
+        }
+
+        return { host, port };
     }
 }
 
-async function createApplicationDatabase(console: Console, client: Client) {
-    console.write(`Creating ${databaseName} database.`);
-    await client.query(`CREATE DATABASE ${databaseName};`);
+async function createApplicationDatabase(console: Console, host: string, port: number, database: string, user: string) {
+    const client = new Client({
+        host,
+        port,
+        database,
+        user
+    });
+
+    try {
+        console.write(`Connecting to the PostgreSQL server.`);
+        await client.connect();
+    
+        console.write(`Looking for the ${databaseName} database.`);
+        const databases = await client.query(`
+            SELECT 1
+            FROM pg_database
+            WHERE datname = $1;`, [
+                databaseName
+            ]);
+        if (databases.rowCount === 0) {
+            console.write(`The ${databaseName} database does not exist yet. Creating it now...`);
+            await client.query(`CREATE DATABASE ${databaseName};`);
+        }
+        else {
+            console.write(`The ${databaseName} database already exists.`);
+        }
+    }
+    finally {
+        await client.end();
+    }
 }
 
-async function initializeApplicationDatabase(console: Console, host: string, port: number, user: string) {
-    const appClient = new Client({
+async function initializeApplicationDatabase(console: Console, host: string, port: number, user: string, script: string) {
+    const client = new Client({
         host,
         port,
         user,
         database: databaseName
     });
 
-    const factTable = await appClient.query(`SELECT 1
-        FROM information_schema.tables
-        WHERE table_schema = 'public' AND table_name = 'fact';`);
+    try {
+        await client.connect();
 
-    const script = await loadSetupScript();
-
-    console.write("Running setup script.");
-    await appClient.query(script);
+        const factTable = await client.query(`SELECT 1
+            FROM information_schema.tables
+            WHERE table_schema = 'public' AND table_name = 'fact';`);
+        if (factTable.rowCount === 0) {
+            console.write("Running setup script.");
+            await client.query(script);
+        }
+        else {
+            console.write("The application database has already been set up.");
+        }
+    }
+    finally {
+        await client.end();
+    }
 }
 
 async function loadSetupScript() {
-    try {
-        const buffer = await readFileAsync("./node_modules/jinaga/setup.sql");
-        const script = buffer.toString("utf8");
-        return script;
-    }
-    catch (err) {
-        throw new Error(errorMessage(setupScriptAdvice(databaseName), err));
-    }
+    const buffer = await readFileAsync("./node_modules/jinaga/setup.sql");
+    const script = buffer.toString("utf8");
+    return script;
 }
 
 function readFileAsync(path: string) {
