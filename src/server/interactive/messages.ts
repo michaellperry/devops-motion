@@ -21,11 +21,13 @@ export const setEnvironmentVariable = (connectionString: string) => `
 Please set the environment variable DEVOPS_MOTION_POSTGRESQL to a connection
 string.
 
-You can do this in ~/.bashrc with:
+You can do this in ~/.bashrc or ~/.bash_profile with:
 
+------
 export DEVOPS_MOTION_POSTGRESQL=${connectionString}
+------
 
-Once that's set, run npm start again and we'll move on to the next step.
+Now let's move on to the next step.
 `;
 
 export const postgresAdvice = `
