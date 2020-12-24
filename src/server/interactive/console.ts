@@ -12,7 +12,7 @@ export async function withConsole<T>(action: ((console: Console) => Promise<T>))
     try {
         return await action({
             question: async <T>(output: string, defaultValue: string, parse?: (input: string) => T) => {
-                const query = defaultValue ? `${output} (default ${defaultValue}): ` : `${output}: `;
+                const query = defaultValue ? `  ${output} (default ${defaultValue}): ` : `  ${output}: `;
                 while (true) {
                     try {
                         const entered = await new Promise<string>((resolve, error) => {

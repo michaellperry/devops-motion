@@ -1,10 +1,9 @@
-import { readFile } from "fs";
 import { JinagaServer, JinagaServerInstance } from "jinaga";
 import { Client } from "pg";
 import { env } from "process";
-import { createDatabase, createUser, databaseExists, factTableExists, userExists } from "../database/scripts";
+import { createDatabase, createUser, databaseExists, factTableExists, setupApplicationDatabase, userExists } from "../database/scripts";
 import { Console, withConsole } from "./console";
-import { createUserAdvice, creatingApplicationUser, errorMessage, installPostgres, postgresAdvice, setEnvironmentVariable, setupScriptAdvice } from "./messages";
+import { createUserAdvice, creatingApplicationUser, errorMessage, installPostgres, postgresAdvice, setEnvironmentVariable } from "./messages";
 
 const databaseName = "devopsmotion";
 
@@ -29,7 +28,9 @@ async function setUpDatabase(console: Console) {
 
     const credentials = await createApplicationUser(console, address);
 
-    const connectionString = `postgresql://dev:devpw@${address.host}:${address.port}/${databaseName}`;
+    await initializeApplicationDatabase(console, address, credentials);
+
+    const connectionString = `postgresql://${credentials.username}:${credentials.password}@${address.host}:${address.port}/${databaseName}`;
     console.write(setEnvironmentVariable(connectionString));
     return connectionString;
 }
@@ -53,26 +54,10 @@ async function connectToDatabase(console: Console): Promise<PostgresAddress> {
         });
         const database = await console.question("Primary (not application) database", "postgres");
         const user = await console.question("Administrative user", "postgres");
+        console.write("\n");
 
         try {
             await createApplicationDatabase(console, host, port, database, user);
-        }
-        catch (err) {
-            console.write(errorMessage(postgresAdvice, err));
-            continue;
-        }
-
-        let script = "";
-        try {
-            script = await loadSetupScript();
-        }
-        catch (err) {
-            console.write(errorMessage(setupScriptAdvice(databaseName), err));
-            continue;
-        }
-    
-        try {
-            await initializeApplicationDatabase(console, host, port, user, script);
         }
         catch (err) {
             console.write(errorMessage(postgresAdvice, err));
@@ -110,50 +95,6 @@ async function createApplicationDatabase(console: Console, host: string, port: n
     }
 }
 
-async function initializeApplicationDatabase(console: Console, host: string, port: number, user: string, script: string) {
-    const client = new Client({
-        host,
-        port,
-        user,
-        database: databaseName
-    });
-
-    try {
-        await client.connect();
-
-        const factTable = await client.query(factTableExists);
-        if (factTable.rowCount === 0) {
-            console.write("Running setup script.");
-            await client.query(script);
-        }
-        else {
-            console.write("The application database has already been set up.");
-        }
-    }
-    finally {
-        await client.end();
-    }
-}
-
-async function loadSetupScript() {
-    const buffer = await readFileAsync("./node_modules/jinaga/setup.sql");
-    const script = buffer.toString("utf8");
-    return script;
-}
-
-function readFileAsync(path: string) {
-    return new Promise<Buffer>((resolve, reject) => {
-        readFile(path, (err, data) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                resolve(data);
-            }
-        })
-    });
-}
-
 interface UserCredentials {
     username: string;
     password: string;
@@ -164,13 +105,17 @@ async function createApplicationUser(console: Console, address: PostgresAddress)
         console.write(creatingApplicationUser(databaseName));
         const username = await console.question("Application user name", "domapp");
         const password = await console.question("Application password");
-        if (!password) {
-            console.write("A password is required.");
+        console.write("\n");
+        if (!isValidUserName(username)) {
+            console.write("Username must be up to 16 alphanumeric characters. Underscore and dash are allowed.");
+            continue;
+        }
+        if (!isValidPassword(password)) {
+            console.write("A password is required. It cannot contain an apostrophe.");
             continue;
         }
 
         try {
-            console.write("\n");
             await createUserRole(console, address, username, password);
         }
         catch (err) {
@@ -180,6 +125,31 @@ async function createApplicationUser(console: Console, address: PostgresAddress)
 
         return { username, password };
     }
+}
+
+function isValidUserName(username: string) {
+    if (!username) {
+        return false;
+    }
+    if (username.length > 16) {
+        return false;
+    }
+    if (!/^[a-zA-Z0-9_-]*$/.test(username)) {
+        return false;
+    }
+
+    return true;
+}
+
+function isValidPassword(password: string) {
+    if (!password) {
+        return false;
+    }
+    if (password.includes("'")) {
+        return false;
+    }
+
+    return true;
 }
 
 async function createUserRole(console: Console, address: PostgresAddress, username: string, password: string) {
@@ -196,10 +166,36 @@ async function createUserRole(console: Console, address: PostgresAddress, userna
         const users = await client.query(userExists, [ username ]);
         if (users.rowCount === 0) {
             console.write(`Creating application user ${username}.`);
-            await client.query(createUser, [ username, password ]);
+            await client.query(createUser(username, password));
         }
         else {
             console.write(`The user ${username} already exists.`);
+        }
+    }
+    finally {
+        await client.end();
+    }
+}
+
+async function initializeApplicationDatabase(console: Console, address: PostgresAddress, credentials: UserCredentials) {
+    const client = new Client({
+        host: address.host,
+        port: address.port,
+        user: address.user,
+        database: databaseName
+    });
+
+    try {
+        await client.connect();
+
+        const factTable = await client.query(factTableExists);
+        if (factTable.rowCount === 0) {
+            console.write("Running setup script.");
+            await client.query(setupApplicationDatabase(credentials.username));
+            console.write("Successfully set up the database!");
+        }
+        else {
+            console.write("The application database has already been set up.");
         }
     }
     finally {
