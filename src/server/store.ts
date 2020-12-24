@@ -1,8 +1,11 @@
-import { Jinaga, JinagaServer } from "jinaga";
-import { env } from "process";
-import { Console, withConsole } from "./console/interface";
-import { Client } from "pg";
 import { readFile } from "fs";
+import { Jinaga, JinagaServer } from "jinaga";
+import { Client } from "pg";
+import { env } from "process";
+import { Console, withConsole } from "./interactive/console";
+import { errorMessage, installPostgres, postgresAdvice, setEnvironmentVariable, setupScriptAdvice, welcome } from "./interactive/messages";
+
+const databaseName = "devopsmotion";
 
 export async function initializeStore(): Promise<Jinaga> {
     const connectionString = env.DEVOPS_MOTION_POSTGRESQL;
@@ -18,32 +21,12 @@ export async function initializeStore(): Promise<Jinaga> {
 }
 
 async function setUpDatabase(console: Console) {
-    console.write(`---------
-
-Welcome to DevOps Motion
-
-I'll help you keep your projects moving forward. But first I'll need a little
-help myself. I need a PostgreSQL database to store your configuration and
-project snapshots.
-
-Please download PostgreSQL from https://www.postgresql.org/download/
-
-Once you have it installed, I'll set up the database.
-
----------`);
+    console.write(welcome);
+    console.write(installPostgres);
 
     const address = await connectToDatabase(console);
 
-    console.write(`---------
-
-Please set the environment variable DEVOPS_MOTION_POSTGRESQL to a connection
-string.
-
-You can do this in ~/.bashrc with:
-
-export DEVOPS_MOTION_POSTGRESQL=postgresql://dev:devpw@${address.host}:${address.port}/devopsmotion
-
----------`);
+    console.write(setEnvironmentVariable(address.host, address.port, databaseName));
 }
 
 async function connectToDatabase(console: Console) {
@@ -67,34 +50,25 @@ async function connectToDatabase(console: Console) {
         });
 
         try {
-            console.write(`---------
-
-Connecting to the PostgreSQL server.`);
+            console.write(`Connecting to the PostgreSQL server.`);
             await client.connect();
 
-            console.write("Looking for the devopsmotion database.");
-            const databases = await client.query("SELECT 1 FROM pg_database WHERE datname = 'devopsmotion';");
+            console.write(`Looking for the ${databaseName} database.`);
+            const databases = await client.query(`SELECT 1 FROM pg_database WHERE datname = '${databaseName}';`);
             if (databases.rowCount === 0) {
-                console.write(`The devopsmotion database does not exist yet. Creating it now...`);
-                await createApplicationDatabase(console, client, host, port, user);
+                console.write(`The ${databaseName} database does not exist yet. Creating it now...`);
+                await createApplicationDatabase(console, client);
             }
             else {
-                console.write(`The devopsmotion database already exists.`);
+                console.write(`The ${databaseName} database already exists.`);
             }
+
+            await initializeApplicationDatabase(console, host, port, user);
+
             return { host, port };
         }
         catch (err) {
-            console.write(`
-xxxxxxxxx
-
-Something went wrong!
-
-I was not able to connect to your PostgreSQL database. Please check your
-credentials and try again.
-
-${err.message}
-
-xxxxxxxxx`);
+            console.write(errorMessage(postgresAdvice, err));
         }
         finally {
             await client.end();
@@ -102,22 +76,38 @@ xxxxxxxxx`);
     }
 }
 
-async function createApplicationDatabase(console: Console, client: Client, host: string, port: number, user: string) {
-    console.write("Creating devopsmotion database.");
-    await client.query("CREATE DATABASE devopsmotion;");
+async function createApplicationDatabase(console: Console, client: Client) {
+    console.write(`Creating ${databaseName} database.`);
+    await client.query(`CREATE DATABASE ${databaseName};`);
+}
 
+async function initializeApplicationDatabase(console: Console, host: string, port: number, user: string) {
     const appClient = new Client({
         host,
         port,
         user,
-        database: "devopsmotion"
+        database: databaseName
     });
 
-    const buffer = await readFileAsync("./node_modules/jinaga/setup.sql");
-    const script = buffer.toString("utf8");
+    const factTable = await appClient.query(`SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'fact';`);
+
+    const script = await loadSetupScript();
 
     console.write("Running setup script.");
-    await client.query(script);
+    await appClient.query(script);
+}
+
+async function loadSetupScript() {
+    try {
+        const buffer = await readFileAsync("./node_modules/jinaga/setup.sql");
+        const script = buffer.toString("utf8");
+        return script;
+    }
+    catch (err) {
+        throw new Error(errorMessage(setupScriptAdvice(databaseName), err));
+    }
 }
 
 function readFileAsync(path: string) {
