@@ -2,7 +2,7 @@ import { readFile } from "fs";
 import { JinagaServer, JinagaServerInstance } from "jinaga";
 import { Client } from "pg";
 import { env } from "process";
-import { createUser, userExists } from "../database/scripts";
+import { createDatabase, createUser, databaseExists, factTableExists, userExists } from "../database/scripts";
 import { Console, withConsole } from "./console";
 import { createUserAdvice, creatingApplicationUser, errorMessage, installPostgres, postgresAdvice, setEnvironmentVariable, setupScriptAdvice } from "./messages";
 
@@ -96,15 +96,10 @@ async function createApplicationDatabase(console: Console, host: string, port: n
         await client.connect();
     
         console.write(`Looking for the ${databaseName} database.`);
-        const databases = await client.query(`
-            SELECT 1
-            FROM pg_database
-            WHERE datname = $1;`, [
-                databaseName
-            ]);
+        const databases = await client.query(databaseExists, [ databaseName ]);
         if (databases.rowCount === 0) {
             console.write(`The ${databaseName} database does not exist yet. Creating it now...`);
-            await client.query(`CREATE DATABASE ${databaseName};`);
+            await client.query(createDatabase, [ databaseName ]);
         }
         else {
             console.write(`The ${databaseName} database already exists.`);
@@ -126,9 +121,7 @@ async function initializeApplicationDatabase(console: Console, host: string, por
     try {
         await client.connect();
 
-        const factTable = await client.query(`SELECT 1
-            FROM information_schema.tables
-            WHERE table_schema = 'public' AND table_name = 'fact';`);
+        const factTable = await client.query(factTableExists);
         if (factTable.rowCount === 0) {
             console.write("Running setup script.");
             await client.query(script);
