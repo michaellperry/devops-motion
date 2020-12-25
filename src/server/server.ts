@@ -15,7 +15,7 @@ async function main() {
     const server = http.createServer(app);
     app.set("port", process.env.PORT || 8080);
     app.use('/jinaga', jinagaServer.handler);
-    configureRoutes(app, jinagaServer.j, configuration);
+    configureRoutes(app, configuration.project);
 
     server.listen(app.get('port'), () => {
         console.log(`  App is running at http://localhost:${app.get('port')} in ${app.get('env')} mode`);

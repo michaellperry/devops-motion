@@ -1,12 +1,15 @@
+import { Project } from "@shared/model/project";
 import { Express, static as ExpressStatic } from 'express';
-import { Jinaga } from "jinaga";
 import * as path from 'path';
-import { Configuration } from "./azure-devops/configuration";
 
-export function configureRoutes(app: Express, j: Jinaga, configuration: Configuration) {
+export function configureRoutes(app: Express, project: Project) {
     app.get(/^\/(index.html)?$/, (req, res) => {
         res.sendFile(path.join(__dirname, '../client/index.html'));
     });
 
     app.use('/scripts', ExpressStatic(path.join(__dirname, '../client/scripts')));
+
+    app.get("/project.json", (req, res) => {
+        res.send(JSON.stringify(project));
+    });
 }
