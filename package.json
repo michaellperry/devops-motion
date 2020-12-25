@@ -2,10 +2,12 @@
   "name": "devops-motion",
   "version": "1.0.0",
   "description": "Tools to move work forward in Azure DevOps",
-  "main": "dist/server.js",
+  "main": "dist/server/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server",
+    "clean": "rm -rf dist/",
+    "start": "node dist/server/server",
+    "reconfigure": "node dist/server/server -r",
     "test": "jest"
   },
   "repository": {

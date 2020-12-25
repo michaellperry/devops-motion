@@ -1,17 +1,18 @@
+import { Organization, Project } from "@shared/model/project";
 import { Jinaga } from "jinaga";
 import { Console, withConsole } from "../interactive/console";
 import { devOpsAdvice, errorMessage, getAccessToken, settingUpAzureDevOps, settingUpAzureDevOpsAgain, success } from "../interactive/messages";
 import { Configuration, Device } from "./configuration";
 import { AzureDevOps } from "./proxy";
 
-export async function initializeDevOps(j: Jinaga): Promise<AzureDevOps> {
+export async function initializeDevOps(j: Jinaga, reconfigure: boolean): Promise<Configuration> {
     const device = await j.local<Device>();
     const configurations = await j.query(device, j.for(Configuration.forDevice));
 
-    const configuration = configurations.length === 1 ? configurations[0] :
+    const configuration = (configurations.length === 1 && !reconfigure) ? configurations[0] :
         await withConsole(console => setUpAzureDevOps(console, j, device, configurations));
 
-    return new AzureDevOps(configuration.organization, configuration.project, configuration.apiSecret);
+    return configuration;
 }
 
 async function setUpAzureDevOps(console: Console, j: Jinaga, device: Device, prior: Configuration[]) : Promise<Configuration> {
@@ -51,8 +52,10 @@ async function setUpAzureDevOps(console: Console, j: Jinaga, device: Device, pri
             continue;
         }
 
+        const organizationFact = new Organization(organization);
+        const projectFact = new Project(organizationFact, project);
         const configuration = new Configuration(
-            device, organization, project, accessToken, prior);
+            device, projectFact, accessToken, prior);
         return await j.fact(configuration);
     }
 }

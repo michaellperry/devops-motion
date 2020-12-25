@@ -1,4 +1,5 @@
 import { Jinaga as j } from "jinaga";
+import { Project } from "@shared/model/project";
 
 export class Device {
     static Type = "Jinaga.Device";
@@ -14,8 +15,7 @@ export class Configuration {
 
     constructor(
         public device: Device,
-        public organization: string,
-        public project: string,
+        public project: Project,
         public apiSecret: string,
         public prior: Configuration[]
     ) { }

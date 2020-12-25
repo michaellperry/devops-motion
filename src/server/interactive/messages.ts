@@ -73,6 +73,17 @@ https://dev.azure.com/<organization>/<project>
 Please tell me what those two values are.
 `;
 
+export const reconfiguringAzureDevOps = `
+You've specified the -r flag, meaning that you want to reconfigure Azure
+DevOps. I'll be glad to walk you through that.
+
+Your Azure DevOps site will be at a URL like this:
+
+https://dev.azure.com/<organization>/<project>
+
+Please tell me your Azure DevOps organization and project.
+`
+
 export const settingUpAzureDevOpsAgain = `
 It looks like you've gone through this process a couple of times already. I
 see two configurations, and I don't know which one to use. Let's do this setup
