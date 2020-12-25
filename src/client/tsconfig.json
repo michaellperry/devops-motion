@@ -2,17 +2,20 @@
     "compilerOptions": {
         "baseUrl": ".",
         "strict": true,
-        "module": "commonjs",
+        "module": "es6",
         "esModuleInterop": true,
-        "target": "es6",
+        "target": "es5",
         "moduleResolution": "node",
         "sourceMap": true,
-        "outDir": "dist",
+        "outDir": "../../dist",
         "paths": {
             "@shared/*": [
-                "./src/shared/*"
+                "../shared/*"
             ]
-        }
+        },
+        "allowSyntheticDefaultImports": true,
+        "noImplicitAny": true,
+        "allowJs": true
     },
     "lib": [
         "es2015"
