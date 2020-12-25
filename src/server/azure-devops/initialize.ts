@@ -1,18 +1,17 @@
 import { Jinaga } from "jinaga";
 import { Console, withConsole } from "../interactive/console";
-import { devOpsAdvice, errorMessage, getAccessToken, selectReleaseDefinition, settingUpAzureDevOps, settingUpAzureDevOpsAgain } from "../interactive/messages";
+import { devOpsAdvice, errorMessage, getAccessToken, settingUpAzureDevOps, settingUpAzureDevOpsAgain, success } from "../interactive/messages";
 import { Configuration, Device } from "./configuration";
 import { AzureDevOps } from "./proxy";
-import { ReleaseDefinition } from "./release-definition";
 
-export async function initializeDevOps(j: Jinaga): Promise<Configuration> {
+export async function initializeDevOps(j: Jinaga): Promise<AzureDevOps> {
     const device = await j.local<Device>();
     const configurations = await j.query(device, j.for(Configuration.forDevice));
 
     const configuration = configurations.length === 1 ? configurations[0] :
         await withConsole(console => setUpAzureDevOps(console, j, device, configurations));
 
-    return configuration;
+    return new AzureDevOps(configuration.organization, configuration.project, configuration.apiSecret);
 }
 
 async function setUpAzureDevOps(console: Console, j: Jinaga, device: Device, prior: Configuration[]) : Promise<Configuration> {
@@ -43,10 +42,9 @@ async function setUpAzureDevOps(console: Console, j: Jinaga, device: Device, pri
 
         const proxy = new AzureDevOps(organization, project, accessToken);
 
-        let releaseDefinitionId: number;
         try {
-            const releaseDefinitions = await proxy.listReleaseDefinitions();
-            releaseDefinitionId = await inputReleaseDefinition(console, releaseDefinitions);
+            await proxy.listReleaseDefinitions();
+            console.write(success);
         }
         catch (err) {
             console.write(errorMessage(devOpsAdvice(organization, project), err));
@@ -54,22 +52,8 @@ async function setUpAzureDevOps(console: Console, j: Jinaga, device: Device, pri
         }
 
         const configuration = new Configuration(
-            device, organization, project, accessToken, releaseDefinitionId, prior);
+            device, organization, project, accessToken, prior);
         return await j.fact(configuration);
-    }
-}
-
-async function inputReleaseDefinition(console: Console, releaseDefinitions: ReleaseDefinition[]) {
-    while (true) {
-        console.write(selectReleaseDefinition(releaseDefinitions.map(d => d.name)));
-        const releaseDefinitionName = await console.question("Release pipeilne");
-        const releaseDefinition = releaseDefinitions.find(d => d.name === releaseDefinitionName);
-        if (!releaseDefinition) {
-            console.write("Please select one of the release pipelines.");
-            continue;
-        }
-
-        return releaseDefinition.id;
     }
 }
 

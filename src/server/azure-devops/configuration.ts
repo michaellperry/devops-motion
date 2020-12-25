@@ -17,7 +17,6 @@ export class Configuration {
         public organization: string,
         public project: string,
         public apiSecret: string,
-        public releaseDefinitionId: number,
         public prior: Configuration[]
     ) { }
 

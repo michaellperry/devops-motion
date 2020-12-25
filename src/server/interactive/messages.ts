@@ -108,12 +108,7 @@ https://dev.azure.com/${organization}/${project}
 Then double-check the Personal Access Token.
 `;
 
-export const selectReleaseDefinition = (releaseDefinitionNames: string[]) => `
-Awesome! I was able to connect. I listed the release pipelines that you have
-defined. Please tell me which one I should pay attention to for you. I will
-use this release pipeline to write release notes and that sort of thing.
-
-    ${releaseDefinitionNames.join("\n    ")}
-
-Please copy the name of one of those release pipelines and paste it here.
+export const success = `
+Awesome! I was able to connect. I will now start up the web server so you
+can put your project in motion.
 `;
