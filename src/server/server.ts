@@ -1,11 +1,11 @@
-import { refreshAll } from "./azure-devops/refresh";
+import { initializeDevOps } from "./azure-devops/initialize";
 import { welcome } from "./interactive/messages";
-import { initializeStore } from "./interactive/store";
+import { initializeStore } from "./database/store";
 
 async function main() {
     console.log(welcome);
     const server = await initializeStore();
-    await refreshAll(server.j);
+    await initializeDevOps(server.j);
 }
 
 main().catch(err => console.error(err));

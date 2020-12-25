@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/michaellperry/devops-motion#readme",
   "dependencies": {
+    "axios": "^0.21.1",
     "jinaga": "^2.5.1",
     "pg": "^8.5.1"
   },

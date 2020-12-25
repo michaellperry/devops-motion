@@ -1,9 +1,9 @@
 import { JinagaServer, JinagaServerInstance } from "jinaga";
 import { Client } from "pg";
 import { env } from "process";
-import { createDatabase, createUser, databaseExists, factTableExists, setupApplicationDatabase, userExists } from "../database/scripts";
-import { Console, withConsole } from "./console";
-import { createUserAdvice, creatingApplicationUser, errorMessage, installPostgres, postgresAdvice, setEnvironmentVariable } from "./messages";
+import { createDatabase, createUser, databaseExists, factTableExists, setupApplicationDatabase, userExists } from "./scripts";
+import { Console, withConsole } from "../interactive/console";
+import { createUserAdvice, creatingApplicationUser, errorMessage, installPostgres, postgresAdvice, setEnvironmentVariable } from "../interactive/messages";
 
 const databaseName = "devopsmotion";
 

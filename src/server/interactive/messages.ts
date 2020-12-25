@@ -60,3 +60,50 @@ you like this user role to have?
 export const createUserAdvice = `
 I was not able to create the application user.
 `;
+
+export const settingUpAzureDevOps = `
+Now we need to connect to Azure DevOps. You do not need to be an adminstrator.
+You only need to set up an access token for me. First let me know about your
+origanization and project, then I'll tell you how to get your access token.
+
+If you go to Azure DevOps in your browser, the URL should look like this:
+
+https://dev.azure.com/<organization>/<project>
+
+Please tell me what those two values are.
+`;
+
+export const settingUpAzureDevOpsAgain = `
+It looks like you've gone through this process a couple of times already. I
+see two configurations, and I don't know which one to use. Let's do this setup
+one more time, and I'll fix up your configuration file.
+
+Your Azure DevOps site will be at a URL like this:
+
+https://dev.azure.com/<organization>/<project>
+
+Please tell me your Azure DevOps organization and project.
+`
+
+export const getAccessToken = (organization: string) => `
+Now open this link in your browser to create a Personal Access Token for me
+to use.
+
+https://dev.azure.com/${organization}/_usersSettings/tokens
+
+I will only need these permissions:
+
+  Work Items: Read
+  Code: Read
+  Build: Read
+  Release: Read
+`;
+
+export const devOpsAdvice = (organization: string, project: string) => `
+I was not able to access your project. Please double-check that you can get
+to this URL:
+
+https://dev.azure.com/${organization}/${project}
+
+Then double-check the Personal Access Token.
+`;
