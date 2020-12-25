@@ -1,7 +1,7 @@
 import { Organization, Project } from "@shared/model/project";
 import { Jinaga } from "jinaga";
 import { Console, withConsole } from "../interactive/console";
-import { devOpsAdvice, errorMessage, getAccessToken, settingUpAzureDevOps, settingUpAzureDevOpsAgain, success } from "../interactive/messages";
+import { devOpsAdvice, errorMessage, getAccessToken, reconfiguringAzureDevOps, settingUpAzureDevOps, settingUpAzureDevOpsAgain, success } from "../interactive/messages";
 import { Configuration, Device } from "./configuration";
 import { AzureDevOps } from "./proxy";
 
@@ -19,6 +19,9 @@ async function setUpAzureDevOps(console: Console, j: Jinaga, device: Device, pri
     while (true) {
         if (prior.length === 0) {
             console.write(settingUpAzureDevOps);
+        }
+        else if (prior.length === 1) {
+            console.write(reconfiguringAzureDevOps);
         }
         else {
             console.write(settingUpAzureDevOpsAgain);
