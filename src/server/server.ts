@@ -5,7 +5,7 @@ import { initializeStore } from "./database/store";
 async function main() {
     console.log(welcome);
     const server = await initializeStore();
-    await initializeDevOps(server.j);
+    const configuration = await initializeDevOps(server.j);
 }
 
 main().catch(err => console.error(err));

@@ -17,8 +17,8 @@ export class AzureDevOps {
         return result.data.value as ReleaseDefinition[];
     }
 
-    async listReleases(releasePipelineId: number, limit: number) : Promise<Release[]> {
-        const result = await this.callVsrm(`release/releases?api-version=6.0&$top=${limit}&definitionId=${releasePipelineId}`);
+    async listReleases(releaseDefinitionId: number, limit: number) : Promise<Release[]> {
+        const result = await this.callVsrm(`release/releases?api-version=6.0&$top=${limit}&definitionId=${releaseDefinitionId}`);
         return result.data.value as Release[];
     }
 
