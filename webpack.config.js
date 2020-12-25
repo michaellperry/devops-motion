@@ -5,11 +5,11 @@ const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
     mode: 'development',
-    entry: './src/client/index.ts',
+    entry: './src/client/index.tsx',
     plugins: [
         new webpack.ProgressPlugin(),
         new HtmlWebpackPlugin({
-            title: "DevOps Motion"
+            template: "./views/index.html"
         })
     ],
 
@@ -17,7 +17,10 @@ module.exports = {
         rules: [{
             test: /\.(ts|tsx)$/,
             loader: 'ts-loader',
-            include: [path.resolve(__dirname, 'src/client')],
+            include: [
+                path.resolve(__dirname, './src/client'),
+                path.resolve(__dirname, './src/shared')
+            ],
             exclude: [/node_modules/]
         }, {
             test: /.(scss|css)$/,
@@ -41,7 +44,11 @@ module.exports = {
     },
 
     resolve: {
-        extensions: ['.tsx', '.ts', '.js']
+        extensions: ['.tsx', '.ts', '.js'],
+        alias: {
+            '@shared': path.resolve(__dirname, './src/shared'),
+            'jinaga': 'jinaga/dist/jinaga',
+        }
     },
 
     optimization: {
