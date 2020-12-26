@@ -36,7 +36,7 @@
     "jinaga-react": "^2.2.0",
     "pg": "^8.5.1",
     "react": "^16.14.0",
-    "react-dom": "^17.0.1"
+    "react-dom": "^16.14.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.12.11",
