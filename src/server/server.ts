@@ -1,9 +1,12 @@
 import * as http from "http";
+import { AzureDevOpsConnector } from "./azure-devops/connector";
 import { initializeDevOps } from "./azure-devops/initialize";
+import { AzureDevOps } from "./azure-devops/proxy";
 import { initializeStore } from "./database/store";
 import { welcome } from "./interactive/messages";
-import express = require("express");
 import { configureRoutes } from "./routes";
+import express = require("express");
+import bodyParser = require("body-parser");
 
 async function main() {
     console.log(welcome);
@@ -13,9 +16,17 @@ async function main() {
 
     const app = express();
     const server = http.createServer(app);
+    app.use(bodyParser.json());
     app.set("port", process.env.PORT || 8080);
     app.use('/jinaga', jinagaServer.handler);
-    configureRoutes(app, configuration.project);
+    const azureDevOpsConnector = new AzureDevOpsConnector(
+        jinagaServer.j,
+        new AzureDevOps(
+            configuration.project.organization.organization,
+            configuration.project.project,
+            configuration.apiSecret),
+        configuration.project);
+    configureRoutes(app, azureDevOpsConnector);
 
     server.listen(app.get('port'), () => {
         console.log(`  App is running at http://localhost:${app.get('port')} in ${app.get('env')} mode`);
