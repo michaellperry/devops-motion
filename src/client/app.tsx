@@ -1,11 +1,12 @@
 import * as React from "react";
 import { Project } from "@shared/model/project";
+import { ReleasePipelinesContainer } from "./release-pipelines/container";
 
 export const App = () => {
     const [ project, setProject ] = React.useState<Project | null>(null);
     const [ error, setError ] = React.useState("");
     React.useEffect(() => {
-        fetch("project.json")
+        fetch("api/project")
             .then(response => {
                 if (!response.ok) {
                     throw new Error(response.statusText);
@@ -24,8 +25,7 @@ export const App = () => {
         <div>
             <p>Welcome to DevOps Motion.</p>
             <p>{ error }</p>
-            <p>{ project?.project }</p>
-            <p>{ project?.organization?.organization }</p>
+            <ReleasePipelinesContainer fact={project} />
         </div>
     );
 };

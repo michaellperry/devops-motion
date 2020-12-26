@@ -9,7 +9,7 @@ export function configureRoutes(app: Express, project: Project) {
 
     app.use('/scripts', ExpressStatic(path.join(__dirname, '../client/scripts')));
 
-    app.get("/project.json", (req, res) => {
+    app.get("/api/project", (req, res) => {
         res.send(JSON.stringify(project));
     });
 }
