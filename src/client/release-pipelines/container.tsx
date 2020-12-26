@@ -1,6 +1,6 @@
 import { Project } from "@shared/model/project";
 import { ReleasePipeline, ReleasePipelineName } from "@shared/model/release-pipeline";
-import { collection, field, jinagaContainer, mapProps, property, specificationFor } from "jinaga-react";
+import { ascending, collection, field, jinagaContainer, mapProps, property, specificationFor } from "jinaga-react";
 import * as React from "react";
 import { j } from "../jinaga-config";
 import { ReleasePipelineComponent } from "./release-pipeline";
@@ -17,7 +17,11 @@ const releasePipelineMapping = mapProps(releasePipelineSpecification).to(({id, n
 
 const releasePipelinesSpecification = specificationFor(Project, {
     project: field(p => p),
-    ReleasePipelines: collection(j.for(ReleasePipeline.inProject), releasePipelineMapping)
+    ReleasePipelines: collection(
+        j.for(ReleasePipeline.inProject),
+        releasePipelineMapping,
+        ascending(j.for(ReleasePipelineName.ofReleasePipeline), rpn => rpn.value.toLowerCase(), "")
+    )
 });
 
 const releasePipelinesMapping = mapProps(releasePipelinesSpecification).to(({
