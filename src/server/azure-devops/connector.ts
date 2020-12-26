@@ -1,7 +1,9 @@
 import { Project } from "@shared/model/project";
-import { ReleasePipeline } from "@shared/model/release-pipeline";
+import { ReleasePipeline, ReleasePipelineName } from "@shared/model/release-pipeline";
 import { Jinaga } from "jinaga";
 import { AzureDevOps } from "./proxy";
+import { ascending, field, hashSet, property, structureFor, toArray } from "@shared/structure/structure";
+import { ReleaseDefinition } from "./release-definition";
 
 export class AzureDevOpsConnector {
     constructor(
@@ -12,7 +14,60 @@ export class AzureDevOpsConnector {
 
     async refreshReleasePipelines(): Promise<void> {
         const releaseDefinitions = await this.proxy.listReleaseDefinitions();
-        const releasePipelineFacts = await Promise.all(releaseDefinitions.map(rd =>
-            this.j.fact(new ReleasePipeline(this.project, rd.id))));
+        const releasePipelineStructure = structureFor(Project, {
+            releasePipelines: hashSet(this.j.for(ReleasePipeline.inProject), {
+                fact: field(rp => rp),
+                names: hashSet(this.j.for(ReleasePipelineName.ofReleasePipeline), {
+                    fact: field(rpn => rpn)
+                })
+            })
+        });
+        const releasePipelineHashSet = await releasePipelineStructure.query(this.j, this.project);
+        const releasePipelineFacts = toArray(
+                releasePipelineHashSet.releasePipelines,
+                ascending(rp => rp.fact.id)
+            )
+            .map(rp => ({
+                fact: rp.fact,
+                names: toArray(rp.names, ascending(rpn => rpn.fact.value))
+                    .map(rpn => rpn.fact)
+            }));
+    
+        await Promise.all(releaseDefinitions.map(rd =>
+            this.refreshReleasePipeline(rd, releasePipelineFacts)));
     }
+
+    private async refreshReleasePipeline(
+        releaseDefinition: ReleaseDefinition,
+        queryResults: ReleasePipelineResult[]
+    ) {
+        const existingFact = queryResults.find(rp =>
+            rp.fact.id == releaseDefinition.id);
+        if (existingFact) {
+            const prior = existingFact.names;
+            if (prior.length !== 1 || prior[0].value !== releaseDefinition.name) {
+                await this.j.fact(new ReleasePipelineName(
+                    existingFact.fact,
+                    releaseDefinition.name,
+                    prior
+                ));
+            }
+        }
+        else {
+            const releasePipelineFact = await this.j.fact(new ReleasePipeline(
+                this.project,
+                releaseDefinition.id
+            ));
+            await this.j.fact(new ReleasePipelineName(
+                releasePipelineFact,
+                releaseDefinition.name,
+                []
+            ));
+        }
+    }
+}
+
+interface ReleasePipelineResult {
+    fact: ReleasePipeline;
+    names: ReleasePipelineName[];
 }

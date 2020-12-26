@@ -1,21 +1,31 @@
+import { Project } from "@shared/model/project";
+import { ReleasePipeline, ReleasePipelineName } from "@shared/model/release-pipeline";
+import { hashSet, property, structureFor } from "@shared/structure/structure";
 import * as React from "react";
+import { j } from "../jinaga-config";
 
 export interface ReleasePipelinesComponentProps {
-    organization: string;
-    project: string;
+    project: Project;
 }
 
-export const ReleasePipelinesComponent = ({organization, project} : ReleasePipelinesComponentProps) => (
+export const ReleasePipelinesComponent = ({project} : ReleasePipelinesComponentProps) => (
     <div>
         <h1>Release Pipelines</h1>
-        <button onClick={() => refreshReleasePipelines()}>Refresh</button>
-        <p>{organization}</p>
-        <p>{project}</p>
+        <button onClick={() => refreshReleasePipelines(project)}>Refresh</button>
     </div>
 );
 
-function refreshReleasePipelines() {
+function refreshReleasePipelines(project: Project) {
     fetch("api/project/release-pipelines", {
         method: "POST"
+    }).then(() => queryReleasePipelines(project));
+}
+
+async function queryReleasePipelines(project: Project) {
+    const releasePipelineStructure = structureFor(Project, {
+        releasePipelines: hashSet(j.for(ReleasePipeline.inProject), {
+            name: property(j.for(ReleasePipelineName.ofReleasePipeline), n => n.value, "")
+        })
     });
+    await releasePipelineStructure.query(j, project);
 }

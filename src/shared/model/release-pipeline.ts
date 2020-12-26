@@ -17,3 +17,28 @@ export class ReleasePipeline {
         });
     }
 }
+
+export class ReleasePipelineName {
+    static Type = "DevOpsMotion.ReleasePipeline.Name";
+    public type = ReleasePipelineName.Type;
+
+    constructor(
+        public releasePipeline: ReleasePipeline,
+        public value: string,
+        public prior: ReleasePipelineName[]
+    ) { }
+
+    static ofReleasePipeline(releasePipeline: ReleasePipeline) {
+        return j.match(<ReleasePipelineName>{
+            type: ReleasePipelineName.Type,
+            releasePipeline
+        }).suchThat(ReleasePipelineName.isCurrent);
+    }
+
+    static isCurrent(next: ReleasePipelineName) {
+        return j.notExists(<ReleasePipelineName>{
+            type: ReleasePipelineName.Type,
+            prior: [next]
+        });
+    }
+}
