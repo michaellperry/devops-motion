@@ -7,7 +7,9 @@
     "build": "npm run build:server && npm run build:client",
     "build:server": "tsc --project src/server/tsconfig.json && tscpaths -p src/server/tsconfig.json -s ./src/server -o ./dist/server",
     "build:client": "webpack",
+    "build:dev:client": "webpack --watch",
     "clean": "rm -rf dist/",
+    "dev": "npm run build:server && npm run build:dev:client & npm start",
     "start": "node dist/server/server",
     "reconfigure": "node dist/server/server -r",
     "test": "jest"
