@@ -41,7 +41,7 @@ async function setUpAzureDevOps(console: Console, j: Jinaga, device: Device, pri
 
         console.write(getAccessToken(organization));
 
-        const accessToken = await console.question("Access token");
+        const accessToken = await console.password("Access token");
         console.write("\n");
 
         const proxy = new AzureDevOps(organization, project, accessToken);

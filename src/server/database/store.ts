@@ -30,7 +30,7 @@ async function setUpDatabase(console: Console) {
 
     await initializeApplicationDatabase(console, address, credentials);
 
-    const connectionString = `postgresql://${credentials.username}:${credentials.password}@${address.host}:${address.port}/${databaseName}`;
+    const connectionString = `postgresql://${credentials.username}:<the password you just entered>@${address.host}:${address.port}/${databaseName}`;
     console.write(setEnvironmentVariable(connectionString));
     return connectionString;
 }
@@ -40,6 +40,7 @@ interface PostgresAddress {
     port: number;
     database: string;
     user: string;
+    password: string;
 };
 
 async function connectToDatabase(console: Console): Promise<PostgresAddress> {
@@ -54,26 +55,28 @@ async function connectToDatabase(console: Console): Promise<PostgresAddress> {
         });
         const database = await console.question("Primary (not application) database", "postgres");
         const user = await console.question("Administrative user", "postgres");
+        const password = await console.password("Administrative password");
         console.write("\n");
 
         try {
-            await createApplicationDatabase(console, host, port, database, user);
+            await createApplicationDatabase(console, host, port, database, user, password);
         }
         catch (err) {
             console.write(errorMessage(postgresAdvice, err));
             continue;
         }
 
-        return { host, port, database, user };
+        return { host, port, database, user, password };
     }
 }
 
-async function createApplicationDatabase(console: Console, host: string, port: number, database: string, user: string) {
+async function createApplicationDatabase(console: Console, host: string, port: number, database: string, user: string, password: string) {
     const client = new Client({
         host,
         port,
         database,
-        user
+        user,
+        password
     });
 
     try {
@@ -104,7 +107,7 @@ async function createApplicationUser(console: Console, address: PostgresAddress)
     while (true) {
         console.write(creatingApplicationUser(databaseName));
         const username = await console.question("Application user name", "domapp");
-        const password = await console.question("Application password");
+        const password = await console.password("Application password");
         console.write("\n");
         if (!isValidUserName(username)) {
             console.write("Username must be up to 16 alphanumeric characters. Underscore and dash are allowed.");
@@ -157,7 +160,8 @@ async function createUserRole(console: Console, address: PostgresAddress, userna
         host: address.host,
         port: address.port,
         database: address.database,
-        user: address.user
+        user: address.user,
+        password: address.password
     });
 
     try {
