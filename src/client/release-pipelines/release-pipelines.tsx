@@ -2,23 +2,32 @@ import { Project } from "@shared/model/project";
 import { ReleasePipeline, ReleasePipelineName } from "@shared/model/release-pipeline";
 import { hashSet, property, structureFor } from "@shared/structure/structure";
 import * as React from "react";
+import { useErrorState } from "../frame/error-container";
 import { j } from "../jinaga-config";
 
 export interface ReleasePipelinesComponentProps {
     project: Project;
 }
 
-export const ReleasePipelinesComponent = ({project} : ReleasePipelinesComponentProps) => (
-    <div>
-        <h1>Release Pipelines</h1>
-        <button onClick={() => refreshReleasePipelines(project)}>Refresh</button>
-    </div>
-);
+export const ReleasePipelinesComponent = ({project} : ReleasePipelinesComponentProps) => {
+    const [ setError ] = useErrorState();
 
-function refreshReleasePipelines(project: Project) {
+    return (
+        <div>
+            <h1>Release Pipelines</h1>
+            <button onClick={() => refreshReleasePipelines(project, setError)}>Refresh</button>
+        </div>
+    )
+};
+
+function refreshReleasePipelines(project: Project, setError: (message: string) => void) {
     fetch("api/project/release-pipelines", {
         method: "POST"
-    }).then(() => queryReleasePipelines(project));
+    }).then(() =>
+        queryReleasePipelines(project)
+    ).catch(err => {
+        setError(err.message);
+    });
 }
 
 async function queryReleasePipelines(project: Project) {

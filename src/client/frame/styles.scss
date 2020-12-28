@@ -1,0 +1,21 @@
+.error-bar {
+    position: fixed;
+    bottom: -45px;
+
+    height: 40px;
+    width: 100%;
+
+    span {
+        margin: 10px;
+        vertical-align: middle;
+    }
+
+    color: white;
+    background-color: rgb(148, 16, 16);
+
+    transition: bottom 0.4s ease-out;
+
+    &.error-visible {
+        bottom: 0px;
+    }
+}

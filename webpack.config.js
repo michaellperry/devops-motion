@@ -44,7 +44,7 @@ module.exports = {
     },
 
     resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.tsx', '.ts', '.js', '.scss'],
         alias: {
             '@shared': path.resolve(__dirname, './src/shared'),
             'jinaga': 'jinaga/dist/jinaga',

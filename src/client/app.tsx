@@ -1,10 +1,13 @@
 import * as React from "react";
 import { Project } from "@shared/model/project";
 import { ReleasePipelinesContainer } from "./release-pipelines/container";
+import { ErrorBar } from "./frame/error-bar";
+import { useErrorState } from "./frame/error-container";
 
 export const App = () => {
     const [ project, setProject ] = React.useState<Project | null>(null);
-    const [ error, setError ] = React.useState("");
+    const [ setError ] = useErrorState();
+
     React.useEffect(() => {
         fetch("api/project")
             .then(response => {
@@ -24,7 +27,6 @@ export const App = () => {
     return (
         <div>
             <p>Welcome to DevOps Motion.</p>
-            <p>{ error }</p>
             <ReleasePipelinesContainer fact={project} />
         </div>
     );
