@@ -23,6 +23,9 @@ export async function readQuestion<T>(output: string, defaultValue?: string, par
             return value;
         }
         catch (err) {
+            if (err.message === "canceled") {
+                process.exit(1);
+            }
             console.log(err.message);
         }
     }
