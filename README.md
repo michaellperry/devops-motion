@@ -26,6 +26,14 @@ npm start
 
 The application will walk you through environment and database setup.
 
+If you are using WSL on Windows, consider running PostgreSQL in WSL rather than Windows.
+Install it using `sudo apt-get install postgresql postgresql-contrib`.
+Then start it with `sudo service postgresql start`.
+
+At first, the postgres user will not have a password.
+To set one, run `sudo -u postgres psql postgres` to log in, then type `\password postgres` and create a password.
+Or you can run DevOps Motion as the user postgres and leave the password blank: `sudo -u postgres npm start`.
+
 ## Troubleshooting
 
 connect ECONNREFUSED 127.0.0.1:5432
@@ -51,3 +59,11 @@ This is likely a software firewall.
 On Windows with WSL, you might be running PostgreSQL as a Windows service but trying to connect via a WSL client.
 The Windows firewall prevents WSL apps from accessing Windows services.
 Open the Windows Defender Firewall settings and [customize the protected connections](https://github.com/microsoft/WSL/issues/4139#issuecomment-732067409) to remove WSL.
+
+If this doesn't solve the issue, consider running PostgreSQL in WSL rather than Windows.
+Install it using `sudo apt-get install postgresql postgresql-contrib`.
+Then start it with `sudo service postgresql start`.
+
+At first, the postgres user will not have a password.
+To set one, run `sudo -u postgres psql postgres` to log in, then type `\password postgres` and create a password.
+Or you can run DevOps Motion as the user postgres and leave the password blank: `sudo -u postgres npm start`.
