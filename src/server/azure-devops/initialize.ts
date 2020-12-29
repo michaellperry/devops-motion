@@ -1,6 +1,6 @@
 import { Organization, Project } from "@shared/model/project";
 import { Jinaga } from "jinaga";
-import { Console, withConsole } from "../interactive/console";
+import { readPassword, readQuestion, write } from "../interactive/interactive";
 import { devOpsAdvice, errorMessage, getAccessToken, reconfiguringAzureDevOps, settingUpAzureDevOps, settingUpAzureDevOpsAgain, success } from "../interactive/messages";
 import { Configuration, Device } from "./configuration";
 import { AzureDevOps } from "./proxy";
@@ -10,48 +10,48 @@ export async function initializeDevOps(j: Jinaga, reconfigure: boolean): Promise
     const configurations = await j.query(device, j.for(Configuration.forDevice));
 
     const configuration = (configurations.length === 1 && !reconfigure) ? configurations[0] :
-        await withConsole(console => setUpAzureDevOps(console, j, device, configurations));
+        await setUpAzureDevOps(j, device, configurations);
 
     return configuration;
 }
 
-async function setUpAzureDevOps(console: Console, j: Jinaga, device: Device, prior: Configuration[]) : Promise<Configuration> {
+async function setUpAzureDevOps(j: Jinaga, device: Device, prior: Configuration[]) : Promise<Configuration> {
     while (true) {
         if (prior.length === 0) {
-            console.write(settingUpAzureDevOps);
+            write(settingUpAzureDevOps);
         }
         else if (prior.length === 1) {
-            console.write(reconfiguringAzureDevOps);
+            write(reconfiguringAzureDevOps);
         }
         else {
-            console.write(settingUpAzureDevOpsAgain);
+            write(settingUpAzureDevOpsAgain);
         }
     
-        const organization = await console.question("Organization");
-        const project = await console.question("Project");
-        console.write("\n");
+        const organization = await readQuestion("Organization");
+        const project = await readQuestion("Project");
+        write("\n");
         if (!isValidOrganization(organization)) {
-            console.write("Organization is required.");
+            write("Organization is required.");
             continue;
         }
         if (!isValidProject(project)) {
-            console.write("Project is required.");
+            write("Project is required.");
             continue;
         }
 
-        console.write(getAccessToken(organization));
+        write(getAccessToken(organization));
 
-        const accessToken = await console.password("Access token");
-        console.write("\n");
+        const accessToken = await readPassword("Access token");
+        write("\n");
 
         const proxy = new AzureDevOps(organization, project, accessToken);
 
         try {
             await proxy.listReleaseDefinitions();
-            console.write(success);
+            write(success);
         }
         catch (err) {
-            console.write(errorMessage(devOpsAdvice(organization, project), err));
+            write(errorMessage(devOpsAdvice(organization, project), err));
             continue;
         }
 
