@@ -1,27 +1,21 @@
-import * as React from "react";
 import { Project } from "@shared/model/project";
+import * as React from "react";
+import { useProcess } from "./frame/process-container";
 import { ReleasePipelinesContainer } from "./release-pipelines/container";
-import { ErrorBar } from "./frame/error-bar";
-import { useErrorState } from "./frame/error-container";
 
 export const App = () => {
     const [ project, setProject ] = React.useState<Project | null>(null);
-    const [ setError ] = useErrorState();
+    const runProcess = useProcess();
 
     React.useEffect(() => {
-        fetch("api/project")
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
-                return response.json();
-            })
-            .then(value => {
-                setProject(value as Project);
-            })
-            .catch(err => {
-                setError(err.message);
-            });
+        runProcess(async () => {
+            const response = await fetch("api/project");
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            const value = await response.json();
+            setProject(value as Project);
+        });
     }, []);
 
     return (
