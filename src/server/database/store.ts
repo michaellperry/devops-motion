@@ -87,7 +87,7 @@ async function createApplicationDatabase(host: string, port: number, database: s
         const databases = await client.query(databaseExists, [ databaseName ]);
         if (databases.rowCount === 0) {
             write(`The ${databaseName} database does not exist yet. Creating it now...`);
-            await client.query(createDatabase, [ databaseName ]);
+            await client.query(createDatabase(databaseName));
         }
         else {
             write(`The ${databaseName} database already exists.`);
@@ -185,8 +185,9 @@ async function initializeApplicationDatabase(address: PostgresAddress, credentia
     const client = new Client({
         host: address.host,
         port: address.port,
+        database: databaseName,
         user: address.user,
-        database: databaseName
+        password: address.password
     });
 
     try {

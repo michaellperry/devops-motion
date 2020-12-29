@@ -3,8 +3,8 @@ SELECT 1
   FROM pg_database
   WHERE datname = $1;`;
 
-export const createDatabase = `
-CREATE DATABASE $1;`;
+export const createDatabase = (databaseName: string) => `
+CREATE DATABASE ${databaseName};`;
 
 export const factTableExists = `
 SELECT 1
