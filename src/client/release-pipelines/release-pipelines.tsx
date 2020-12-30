@@ -1,3 +1,4 @@
+import { Button } from '@material-ui/core';
 import { Project } from "@shared/model/project";
 import { ReleasePipeline, ReleasePipelineName } from "@shared/model/release-pipeline";
 import { hashSet, property, structureFor } from "@shared/structure/structure";
@@ -38,7 +39,12 @@ export const ReleasePipelinesComponent = ({project} : ReleasePipelinesComponentP
     return (
         <div>
             <h1>Release Pipelines</h1>
-            <button onClick={() => runProcess(() => refreshReleasePipelines(project))}>Refresh</button>
+            <Button
+                color="primary"
+                variant="contained"
+                onClick={() => runProcess(() => refreshReleasePipelines(project))}>
+                    Refresh
+            </Button>
         </div>
     )
 };
