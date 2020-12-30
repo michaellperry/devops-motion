@@ -2,7 +2,7 @@
 
 import { ReleaseDefinition } from "./release-definition";
 
-export interface Release {
+export interface ReleaseRepresentation {
     id: number;
     name: string;
     status: string;

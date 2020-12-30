@@ -1,8 +1,10 @@
 import { Project } from "@shared/model/project";
+import { Release } from "@shared/model/release";
 import { ReleasePipeline, ReleasePipelineName } from "@shared/model/release-pipeline";
+import { ascending, field, hashSet, structureFor, toArray } from "@shared/structure/structure";
 import { Jinaga } from "jinaga";
 import { AzureDevOps } from "./proxy";
-import { ascending, field, hashSet, property, structureFor, toArray } from "@shared/structure/structure";
+import { ReleaseRepresentation } from "./release";
 import { ReleaseDefinition } from "./release-definition";
 
 export class AzureDevOpsConnector {
@@ -64,6 +66,18 @@ export class AzureDevOpsConnector {
                 []
             ));
         }
+    }
+
+    async refreshReleases(id: number): Promise<void> {
+        const releases = await this.proxy.listReleases(id, 10);
+
+        const releasePipelineFact = new ReleasePipeline(this.project, id);
+        await Promise.all(releases.map(release =>
+            this.refreshRelease(release, releasePipelineFact)));
+    }
+
+    private async refreshRelease(release: ReleaseRepresentation, releasePipelineFact: ReleasePipeline): Promise<void> {
+        const releaseFact = await this.j.fact(new Release(releasePipelineFact, release.name, release.createdOn));
     }
 }
 

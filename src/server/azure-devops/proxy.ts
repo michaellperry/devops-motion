@@ -1,5 +1,5 @@
 import Axios from "axios";
-import { Release } from "./release";
+import { ReleaseRepresentation } from "./release";
 import { ReleaseDefinition } from "./release-definition";
 import { ReleaseDetail } from "./release-detail";
 import { WorkItem } from "./work-item";
@@ -17,9 +17,9 @@ export class AzureDevOps {
         return result.data.value as ReleaseDefinition[];
     }
 
-    async listReleases(releaseDefinitionId: number, limit: number) : Promise<Release[]> {
+    async listReleases(releaseDefinitionId: number, limit: number) : Promise<ReleaseRepresentation[]> {
         const result = await this.callVsrm(`release/releases?api-version=6.0&$top=${limit}&definitionId=${releaseDefinitionId}`);
-        return result.data.value as Release[];
+        return result.data.value as ReleaseRepresentation[];
     }
 
     async getRelease(releaseId: number) : Promise<ReleaseDetail> {
