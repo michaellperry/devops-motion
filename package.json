@@ -40,6 +40,7 @@
     "pg": "^8.5.1",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
+    "react-router-dom": "^5.2.0",
     "read": "^1.0.7"
   },
   "devDependencies": {
@@ -48,6 +49,7 @@
     "@types/pg": "^7.14.7",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
+    "@types/react-router-dom": "^5.1.7",
     "@types/read": "0.0.28",
     "@webpack-cli/init": "^1.1.0",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",

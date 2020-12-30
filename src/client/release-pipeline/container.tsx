@@ -1,9 +1,9 @@
 import { List } from "@material-ui/core";
 import { Release } from "@shared/model/release";
 import { ReleasePipeline, ReleasePipelineName } from "@shared/model/release-pipeline";
-import { j } from "jinaga-config";
 import { collection, descending, field, jinagaContainer, mapProps, property, specificationFor } from "jinaga-react";
 import React from "react";
+import { j } from "../jinaga-config";
 import { ReleaseComponent } from "./release";
 import { ReleasePipelineComponent } from "./release-pipeline";
 

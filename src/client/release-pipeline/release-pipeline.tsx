@@ -1,10 +1,13 @@
-import { ListItem } from "@material-ui/core";
 import React from "react";
+import { Link } from "react-router-dom";
 
 export interface ReleasePipelineComponentProps {
     name: string
 }
 
 export const ReleasePipelineComponent = ({ name }: ReleasePipelineComponentProps) => (
-    <h1>{name}</h1>
+    <>
+        <Link to="/">Home</Link>
+        <h1>{name}</h1>
+    </>
 );

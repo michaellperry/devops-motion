@@ -3,7 +3,10 @@ import * as path from 'path';
 import { AzureDevOpsConnector } from "./azure-devops/connector";
 
 export function configureRoutes(app: Express, azureDevOpsConnector: AzureDevOpsConnector) {
-    app.get(/^\/(index.html)?$/, (req, res) => {
+    app.get([
+        /^\/(index.html)?$/,
+        /^\/release-pipelines\/[0-9]+\/$/
+    ], (req, res) => {
         res.sendFile(path.join(__dirname, '../client/index.html'));
     });
 
