@@ -30,9 +30,10 @@ async function setUpDatabase() {
 
     await initializeApplicationDatabase(address, credentials);
 
-    const connectionString = `postgresql://${credentials.username}:<the password you just entered>@${address.host}:${address.port}/${databaseName}`;
-    write(setEnvironmentVariable(connectionString));
-    return connectionString;
+    const realConnectionString = `postgresql://${credentials.username}:${credentials.password}@${address.host}:${address.port}/${databaseName}`;
+    const maskedConnectionString = `postgresql://${credentials.username}:<the password you just entered>@${address.host}:${address.port}/${databaseName}`;
+    write(setEnvironmentVariable(maskedConnectionString));
+    return realConnectionString;
 }
 
 interface PostgresAddress {
