@@ -1,3 +1,4 @@
+import { Fade, LinearProgress } from "@material-ui/core";
 import * as React from "react";
 import { ErrorBar } from "./error-bar";
 
@@ -20,6 +21,9 @@ export const ProcessContainer = ({ children }: React.PropsWithChildren<ProcessCo
 
     return (
         <ProcessContext.Provider value={setStatus}>
+            <Fade in={status.running}>
+                <LinearProgress  />
+            </Fade>
             { children }
             <ErrorBar message={status.errorMessage} visible={status.hasError} />
         </ProcessContext.Provider>
