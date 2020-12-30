@@ -32,7 +32,6 @@ Then start it with `sudo service postgresql start`.
 
 At first, the postgres user will not have a password.
 To set one, run `sudo -u postgres psql postgres` to log in, then type `\password postgres` and create a password.
-Or you can run DevOps Motion as the user postgres and leave the password blank: `sudo -u postgres npm start`.
 
 ## Troubleshooting
 
@@ -66,4 +65,3 @@ Then start it with `sudo service postgresql start`.
 
 At first, the postgres user will not have a password.
 To set one, run `sudo -u postgres psql postgres` to log in, then type `\password postgres` and create a password.
-Or you can run DevOps Motion as the user postgres and leave the password blank: `sudo -u postgres npm start`.
