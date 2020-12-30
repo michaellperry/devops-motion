@@ -6,29 +6,6 @@ import * as React from "react";
 import { useProcess } from "../frame/process-container";
 import { j } from "../jinaga-config";
 
-/*
-<ul class="mdc-list mdc-list--two-line">
-    <li class="mdc-list-item mdc-ripple-upgraded">
-        <span class="mdc-list-item__text">
-            <span class="mdc-list-item__primary-text">Line item</span>
-            <span class="mdc-list-item__secondary-text">Secondary text</span>
-        </span>
-    </li>
-    <li class="mdc-list-item mdc-ripple-upgraded">
-        <span class="mdc-list-item__text">
-            <span class="mdc-list-item__primary-text">Line item</span>
-            <span class="mdc-list-item__secondary-text">Secondary text</span>
-        </span>
-    </li>
-    <li class="mdc-list-item mdc-ripple-upgraded">
-        <span class="mdc-list-item__text">
-            <span class="mdc-list-item__primary-text">Line item</span>
-            <span class="mdc-list-item__secondary-text">Secondary text</span>
-        </span>
-    </li>
-</ul>
-*/
-
 export interface ReleasePipelinesComponentProps {
     project: Project;
 }

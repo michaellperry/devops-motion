@@ -1,3 +1,4 @@
+import { ListItem, ListItemText } from "@material-ui/core";
 import * as React from "react";
 
 export interface ReleasePipelineComponentProps {
@@ -6,7 +7,7 @@ export interface ReleasePipelineComponentProps {
 }
 
 export const ReleasePipelineComponent = ({id, name}: ReleasePipelineComponentProps) => (
-    <div>
-        <p>{id}: {name}</p>
-    </div>
+    <ListItem button>
+        <ListItemText primary={name} />
+    </ListItem>
 );

@@ -5,6 +5,7 @@ import * as React from "react";
 import { j } from "../jinaga-config";
 import { ReleasePipelineComponent } from "./release-pipeline";
 import { ReleasePipelinesComponent } from "./release-pipelines";
+import List from '@material-ui/core/List';
 
 const releasePipelineSpecification = specificationFor(ReleasePipeline, {
     id: field(rp => rp.id),
@@ -30,7 +31,9 @@ const releasePipelinesMapping = mapProps(releasePipelinesSpecification).to(({
 }) => (
     <>
         <ReleasePipelinesComponent  project={project} />
-        <ReleasePipelines />
+        <List>
+            <ReleasePipelines />
+        </List>
     </>
 ));
 
