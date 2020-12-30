@@ -16,13 +16,14 @@ const releaseMapping = mapProps(releaseSpecification).to(({ name }) => (
 ));
 
 const releasePipelineSpecification = specificationFor(ReleasePipeline, {
+    releasePipeline: field(rp => rp),
     name: property(j.for(ReleasePipelineName.ofReleasePipeline), n => n.value, ""),
     Releases: collection(j.for(Release.inPipeline), releaseMapping, descending(r => r.createdOn))
 })
 
-const releasePipelineMapping = mapProps(releasePipelineSpecification).to(({name, Releases}) => (
+const releasePipelineMapping = mapProps(releasePipelineSpecification).to(({releasePipeline, name, Releases}) => (
     <>
-        <ReleasePipelineComponent name={name} />
+        <ReleasePipelineComponent name={name} releasePipeline={releasePipeline} />
         <List>
             <Releases />
         </List>
