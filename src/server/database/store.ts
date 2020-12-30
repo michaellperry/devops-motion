@@ -109,6 +109,7 @@ async function createApplicationUser(address: PostgresAddress) : Promise<UserCre
         write(creatingApplicationUser(databaseName));
         const username = await readQuestion("Application user name", "domapp");
         const password = await readPassword("Application password");
+        const confirmPassword = await readPassword("Confirm password");
         write("\n");
         if (!isValidUserName(username)) {
             write("Username must be up to 16 alphanumeric characters. Underscore and dash are allowed.");
@@ -116,6 +117,10 @@ async function createApplicationUser(address: PostgresAddress) : Promise<UserCre
         }
         if (!isValidPassword(password)) {
             write("A password is required. It cannot contain an apostrophe.");
+            continue;
+        }
+        if (confirmPassword !== password) {
+            write("The passwords don't match.");
             continue;
         }
 
