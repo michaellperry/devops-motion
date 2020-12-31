@@ -8,11 +8,12 @@ import { ReleaseComponent } from "./release";
 import { ReleasePipelineComponent } from "./release-pipeline";
 
 const releaseSpecification = specificationFor(Release, {
+    release: field(r => r),
     name: field(r => r.name)
 })
 
-const releaseMapping = mapProps(releaseSpecification).to(({ name }) => (
-    <ReleaseComponent name={name} />
+const releaseMapping = mapProps(releaseSpecification).to(({ release, name }) => (
+    <ReleaseComponent release={release} name={name} />
 ));
 
 const releasePipelineSpecification = specificationFor(ReleasePipeline, {
