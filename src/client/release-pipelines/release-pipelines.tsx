@@ -5,6 +5,7 @@ import { hashSet, property, structureFor } from "@shared/structure/structure";
 import * as React from "react";
 import { useProcess } from "../frame/process-container";
 import { j } from "../jinaga-config";
+import { validateResponse } from "../web/verify";
 
 export interface ReleasePipelinesComponentProps {
     project: Project;
@@ -27,9 +28,10 @@ export const ReleasePipelinesComponent = ({project} : ReleasePipelinesComponentP
 };
 
 async function refreshReleasePipelines(project: Project) {
-    await fetch("api/project/release-pipelines", {
+    const response = await fetch("api/project/release-pipelines", {
         method: "POST"
     });
+    await validateResponse(response);
     await queryReleasePipelines(project);
 }
 

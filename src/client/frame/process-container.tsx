@@ -1,6 +1,6 @@
-import { Fade, LinearProgress } from "@material-ui/core";
+import { Fade, LinearProgress, Snackbar } from "@material-ui/core";
+import { Alert } from '@material-ui/lab';
 import * as React from "react";
-import { ErrorBar } from "./error-bar";
 
 interface ProcessState {
     running: boolean;
@@ -19,13 +19,27 @@ export const ProcessContainer = ({ children }: React.PropsWithChildren<ProcessCo
         errorMessage: ""
     });
 
+    const handleClose = () => {
+        setStatus({
+            ...status,
+            hasError: false,
+            errorMessage: ""
+        });
+    }
+
     return (
         <ProcessContext.Provider value={setStatus}>
             <Fade in={status.running}>
                 <LinearProgress  />
             </Fade>
             { children }
-            <ErrorBar message={status.errorMessage} visible={status.hasError} />
+            <Snackbar
+                open={status.hasError}
+                autoHideDuration={6000}
+                onClose={handleClose}
+            >
+                <Alert severity="error" variant="filled">{status.errorMessage}</Alert>
+            </Snackbar>
         </ProcessContext.Provider>
     );
 }

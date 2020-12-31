@@ -6,6 +6,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useProcess } from "../frame/process-container";
 import { j } from "../jinaga-config";
+import { validateResponse } from "../web/verify";
 
 export interface ReleasePipelineComponentProps {
     releasePipeline: ReleasePipeline
@@ -30,9 +31,10 @@ export const ReleasePipelineComponent = ({ name, releasePipeline }: ReleasePipel
 };
 
 async function refreshReleasePipeline(releasePipeline: ReleasePipeline) {
-    await fetch(`/api/project/release-pipelines/${releasePipeline.id}/releases`, {
+    const response = await fetch(`/api/project/release-pipelines/${releasePipeline.id}/releases`, {
         method: "POST"
     });
+    await validateResponse(response);
     await queryForReleases(releasePipeline);
 }
 
