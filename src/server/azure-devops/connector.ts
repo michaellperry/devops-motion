@@ -69,7 +69,7 @@ export class AzureDevOpsConnector {
     }
 
     async refreshReleases(id: number): Promise<void> {
-        const releases = await this.proxy.listReleases(id, 10);
+        const releases = await this.proxy.listReleases(id);
 
         const releasePipelineFact = new ReleasePipeline(this.project, id);
         await Promise.all(releases.map(release =>

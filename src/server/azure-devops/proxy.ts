@@ -17,9 +17,25 @@ export class AzureDevOps {
         return result.data.value as ReleaseDefinition[];
     }
 
-    async listReleases(releaseDefinitionId: number, limit: number) : Promise<ReleaseRepresentation[]> {
-        const result = await this.callVsrm(`release/releases?api-version=6.0&$top=${limit}&definitionId=${releaseDefinitionId}`);
-        return result.data.value as ReleaseRepresentation[];
+    async listReleases(releaseDefinitionId: number) : Promise<ReleaseRepresentation[]> {
+        let continuationToken = "";
+        let allReleases: ReleaseRepresentation[] = [];
+        while (true) {
+            let url = `release/releases?api-version=6.0&definitionId=${releaseDefinitionId}`;
+            if (continuationToken) {
+                url = `${url}&continuationToken=${continuationToken}`;
+            }
+            const result = await this.callVsrm(url);
+            const releases = result.data.value as ReleaseRepresentation[];
+            const nextContinuationToken = result.headers['x-ms-continuationtoken'];
+            allReleases = allReleases.concat(releases);
+            continuationToken = nextContinuationToken;
+
+            if (!releases.length || !nextContinuationToken) {
+                break;
+            }
+        }
+        return allReleases;
     }
 
     async getRelease(releaseId: number) : Promise<ReleaseDetail> {
