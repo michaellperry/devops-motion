@@ -69,11 +69,21 @@ export class AzureDevOpsConnector {
     }
 
     async refreshReleases(id: number): Promise<void> {
-        const releases = await this.proxy.listReleases(id);
-
         const releasePipelineFact = new ReleasePipeline(this.project, id);
-        await Promise.all(releases.map(release =>
-            this.refreshRelease(release, releasePipelineFact)));
+
+        let cursor = await this.proxy.listReleases(id);
+        while (true) {
+            for (const release of cursor.results) {
+                await this.refreshRelease(release, releasePipelineFact);
+            }
+
+            if (cursor.more) {
+                cursor = await cursor.more();
+            }
+            else {
+                break;
+            }
+        }
     }
 
     private async refreshRelease(release: ReleaseRepresentation, releasePipelineFact: ReleasePipeline): Promise<void> {

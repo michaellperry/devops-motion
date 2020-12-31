@@ -5,6 +5,11 @@ import { ReleaseDetail } from "./release-detail";
 import { WorkItem } from "./work-item";
 import { WorkItemDetail } from "./work-item-detail";
 
+export interface Cursor<T> {
+    results: T[];
+    more: (() => Promise<Cursor<T>>) | null;
+}
+
 export class AzureDevOps {
     constructor(
         private organization: string,
@@ -17,25 +22,25 @@ export class AzureDevOps {
         return result.data.value as ReleaseDefinition[];
     }
 
-    async listReleases(releaseDefinitionId: number) : Promise<ReleaseRepresentation[]> {
-        let continuationToken = "";
-        let allReleases: ReleaseRepresentation[] = [];
-        while (true) {
-            let url = `release/releases?api-version=6.0&definitionId=${releaseDefinitionId}`;
-            if (continuationToken) {
-                url = `${url}&continuationToken=${continuationToken}`;
-            }
-            const result = await this.callVsrm(url);
-            const releases = result.data.value as ReleaseRepresentation[];
-            const nextContinuationToken = result.headers['x-ms-continuationtoken'];
-            allReleases = allReleases.concat(releases);
-            continuationToken = nextContinuationToken;
+    async listReleases(releaseDefinitionId: number) : Promise<Cursor<ReleaseRepresentation>> {
+        return this.getReleasesCursor(releaseDefinitionId, "");
+    }
 
-            if (!releases.length || !nextContinuationToken) {
-                break;
-            }
+    private async getReleasesCursor(releaseDefinitionId: number, continuationToken: string): Promise<Cursor<ReleaseRepresentation>> {
+        let url = `release/releases?api-version=6.0&definitionId=${releaseDefinitionId}&queryOrder=ascending`;
+        if (continuationToken) {
+            url = `${url}&continuationToken=${continuationToken}`;
         }
-        return allReleases;
+        const result = await this.callVsrm(url);
+        const releases = result.data.value as ReleaseRepresentation[];
+        const nextContinuationToken = result.headers['x-ms-continuationtoken'];
+
+        return {
+            results: releases,
+            more: nextContinuationToken ?
+                () => this.getReleasesCursor(releaseDefinitionId, nextContinuationToken) :
+                null
+        };
     }
 
     async getRelease(releaseId: number) : Promise<ReleaseDetail> {
