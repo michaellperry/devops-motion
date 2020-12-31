@@ -22,6 +22,13 @@ export class BuildStory {
         public build: Build,
         public story: Story
     ) { }
+
+    static inBuild(build: Build) {
+        return j.match(<BuildStory>{
+            type: BuildStory.Type,
+            build
+        });
+    }
 }
 
 export class BuildTask {
@@ -32,4 +39,11 @@ export class BuildTask {
         public build: Build,
         public task: Task
     ) { }
+
+    static inBuild(build: Build) {
+        return j.match(<BuildTask>{
+            type: BuildTask.Type,
+            build
+        });
+    }
 }

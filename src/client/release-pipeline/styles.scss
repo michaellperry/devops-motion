@@ -1,0 +1,30 @@
+.release-details-container {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: 200px 200px;
+
+    & .task-list {
+        grid-column: 1;
+    }
+
+    & .story-list {
+        grid-column: 2;
+    }
+}
+
+@media (max-width: 620px) {
+    .release-details-container {
+        grid-template-columns: auto;
+        grid-template-rows: 1 1;
+
+        & .task-list {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        & .story-list {
+            grid-column: 1;
+            grid-row: 2;
+        }
+    }
+}
