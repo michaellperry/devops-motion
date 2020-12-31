@@ -71,14 +71,14 @@ export class AzureDevOpsConnector {
     async refreshReleases(id: number): Promise<void> {
         const releasePipelineFact = new ReleasePipeline(this.project, id);
 
-        let cursor = await this.proxy.listReleases(id);
+        let cursor = await this.proxy.listReleases(id, "");
         while (true) {
             for (const release of cursor.results) {
                 await this.refreshRelease(release, releasePipelineFact);
             }
 
-            if (cursor.more) {
-                cursor = await cursor.more();
+            if (cursor.results.length && cursor.bookmark) {
+                cursor = await this.proxy.listReleases(id, cursor.bookmark);
             }
             else {
                 break;

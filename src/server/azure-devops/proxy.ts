@@ -6,8 +6,8 @@ import { WorkItem } from "./work-item";
 import { WorkItemDetail } from "./work-item-detail";
 
 export interface Cursor<T> {
-    results: T[];
-    more: (() => Promise<Cursor<T>>) | null;
+    results: T[],
+    bookmark: string
 }
 
 export class AzureDevOps {
@@ -22,14 +22,10 @@ export class AzureDevOps {
         return result.data.value as ReleaseDefinition[];
     }
 
-    async listReleases(releaseDefinitionId: number) : Promise<Cursor<ReleaseRepresentation>> {
-        return this.getReleasesCursor(releaseDefinitionId, "");
-    }
-
-    private async getReleasesCursor(releaseDefinitionId: number, continuationToken: string): Promise<Cursor<ReleaseRepresentation>> {
+    async listReleases(releaseDefinitionId: number, bookmark: string): Promise<Cursor<ReleaseRepresentation>> {
         let url = `release/releases?api-version=6.0&definitionId=${releaseDefinitionId}&queryOrder=ascending`;
-        if (continuationToken) {
-            url = `${url}&continuationToken=${continuationToken}`;
+        if (bookmark) {
+            url = `${url}&continuationToken=${bookmark}`;
         }
         const result = await this.callVsrm(url);
         const releases = result.data.value as ReleaseRepresentation[];
@@ -37,9 +33,7 @@ export class AzureDevOps {
 
         return {
             results: releases,
-            more: nextContinuationToken ?
-                () => this.getReleasesCursor(releaseDefinitionId, nextContinuationToken) :
-                null
+            bookmark: nextContinuationToken
         };
     }
 
