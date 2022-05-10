@@ -16,6 +16,12 @@ Motion works with Azure DevOps to keep your projects moving.
 ## Setup
 
 Install [Node](https://nodejs.org) and [Postgres](https://www.postgresql.org).
+You can run PostgreSQL on Docker using this command:
+
+```bash
+docker run --name devops-motion-db -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+```
+
 Then clone the repository and run:
 
 ```bash
