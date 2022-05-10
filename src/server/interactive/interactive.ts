@@ -1,4 +1,5 @@
 import read from "read";
+import { assertIsError } from "@shared/error";
 
 export function readQuestion(output: string, defaultValue?: string): Promise<string>;
 export function readQuestion<T>(output: string, defaultValue: string, parse?: (input: string) => T): Promise<T>;
@@ -23,6 +24,7 @@ export async function readQuestion<T>(output: string, defaultValue?: string, par
             return value;
         }
         catch (err) {
+            assertIsError(err);
             if (err.message === "canceled") {
                 process.exit(1);
             }
